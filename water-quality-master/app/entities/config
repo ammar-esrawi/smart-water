@@ -1,0 +1,23 @@
+var twilio = {
+    "accountSID": "AC4d3904c128cf312c904368c4a2d973bf",
+    "authToken": "1fb18e9e33a4af0e8a838ceb24b4f2b9",
+    "from": "+14235464723",
+    "to": ""
+}
+
+var zoho = {
+    TO_EMAIL: "water-quality@scriptr.io",
+	FROM_NAME: "Water Quality"
+}
+
+var email = {
+    "TO": "marvette.feghali@elementn.com",
+    "FROM": "Water Quality App",
+    "BODY": "Water Quality Warning"
+}
+
+
+
+var accountKey = "R602CADC5A"
+var accountSecret = "S56885E13A88BAFFE892AC125D283D2B"
+   

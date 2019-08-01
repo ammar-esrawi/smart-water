@@ -1,0 +1,122 @@
+var log = require("log");
+var redis = require("redis").getInstance("redisFacade");
+var document = require("document");
+var utils = require("app/entities/utils");
+var deviceManager = require("app/entities/devicemanager");
+var config = require("app/entities/config");
+
+var emailAction = require("app/entities/actions/emailOnAlert");
+var smsAction = require("app/entities/actions/smsOnAlert");
+var zohoAction = require("app/entities/actions/zoho/createTicket");
+
+
+var _= require("modules/underscore/underscore.js")._;
+
+function evaluateDevice(entry, prevEntry) {
+   
+    
+    
+    //EVALUATE RULES
+    log.info("rules  process started for email, sms, ticket on unlock, tampering, temperature & batteryLevel");
+    log.info(JSON.stringify(entry))
+    
+    var rules = require("app/entities/rules/apply");
+    
+    var allGenericDecisions = rules.process(entry, request);
+    
+    log.info("allGenericDecisions "+JSON.stringify(allGenericDecisions))
+    console.log("allGenericDecisions "+JSON.stringify(allGenericDecisions))
+    
+    var zohoTickets = []; //_.pluck(allGenericDecisions, "ticket");
+    var emailAlerts = []; //_.pluck(allGenericDecisions, "email");
+    var smsAlerts =  []; //_.pluck(allGenericDecisions, "sms");
+    
+    var recordEvent = [];//_.pluck(allGenericDecisions, "log")
+    
+    _.each(allGenericDecisions, function(obj, index){ 
+     	if(obj.hasOwnProperty("ticket")) {
+            zohoTickets.push(obj["ticket"]);
+        }
+        if(obj.hasOwnProperty("email")) {
+            emailAlerts.push(obj["email"]);
+        }
+        if(obj.hasOwnProperty("sms")) {
+            smsAlerts.push(obj["sms"]);
+        }
+        if(obj.hasOwnProperty("log")) {
+            recordEvent.push(obj["log"]);
+        }
+     
+    });
+    
+    
+    log.info("TICKETS"+JSON.stringify(zohoTickets))
+    for(var i = 0; i< zohoTickets.length; i++){
+        //email and create zoho tickets based on decision table output
+        zohoAction.execute(zohoTickets[i], entry);
+    }
+    
+    log.info("EMAILS"+JSON.stringify(emailAlerts))
+    for(var i = 0; i< emailAlerts.length; i++){
+       
+        //email and create zoho tickets based on decision table output
+        emailAction.execute(request, entry, emailAlerts[i]);
+    }
+    
+    log.info("SMS"+JSON.stringify(smsAlerts))
+    for(var i = 0; i< smsAlerts.length; i++){
+        //email and create zoho tickets based on decision table output
+        smsAction.execute(request, entry, smsAlerts[i]);
+    }
+    
+    log.info("Record Event: "+JSON.stringify(recordEvent))
+    
+    var recordEvent = recordEvent.length > 0
+    
+    log.info("Record Event: "+JSON.stringify(recordEvent))
+    var isSameEntry = function(prevEntry, entry) {
+        
+        if(!prevEntry) {
+            return false;
+        }
+        
+        var pre = JSON.parse(JSON.stringify(prevEntry))
+        var curr = JSON.parse(JSON.stringify(entry))
+        delete pre.by;
+        delete pre.tamperedDate;
+        delete pre.creationDate;
+        
+        delete curr.by;
+        delete curr.tamperedDate;
+        delete curr.creationDate;
+        log.info("isSame entry: "+ JSON.stringify(pre) == JSON.stringify(curr))
+        return JSON.stringify(pre) == JSON.stringify(curr);
+    }
+    
+   
+    if(!isSameEntry(prevEntry, entry) && recordEvent) {
+        log.info("Store Event: "+ recordEvent)
+        saveEventDocument(entry)
+    }
+    
+    
+}
+
+function saveEventDocument(entry) {
+    //Report Device Entry 
+    entry["meta.types"] = {
+        "batteryLevel": "numeric",
+        "temperature": "numeric",
+        "humidity": "numeric",
+        "pressure": "numeric",
+        "tamperDate": "date",
+        "outsideTemperature": "numeric",
+        "deviceEventDate": "date"
+    }
+	//record event in db
+    var documentToSave =  JSON.parse(JSON.stringify(entry));
+    documentToSave["deviceEventDate"] =  new Date(documentToSave["creationDate"]).toISOString().split(".")[0]+"+0000"; //new Date(documentToSave["creationDate"])
+    delete documentToSave["creationDate"]; //Restricted
+    log.info("document entry: "+JSON.stringify(entry))
+    log.info("Save: "+JSON.stringify(document.save(documentToSave)));
+}

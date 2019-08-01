@@ -1,0 +1,20 @@
+/**
+ * API used by UI to create a new ticket in zoho
+ *
+ */
+var zohoLib =  require('/modules/zoho/lib/zoho');
+var zoho = new zohoLib.zoho();
+
+
+var log = require("log")
+log.setLevel("info")
+
+var firstName = request.parameters['firstName'];
+var lastName = request.parameters['lastName'];
+var email = request.user.id;
+var name = request.user.name;
+var subject = request.parameters['subject'];
+var deviceId = request.parameters['deviceId'];
+var message = request.parameters['message'];
+
+return zoho.createTicket(name , email, subject, message, deviceId);

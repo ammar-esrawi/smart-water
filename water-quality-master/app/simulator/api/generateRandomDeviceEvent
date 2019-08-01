@@ -1,0 +1,35 @@
+var simulatedDeviceManager = require("app/simulator/entities/simulatedDeviceManager");
+var deviceProcessor = require("app/entities/deviceprocessor");
+var deviceData = require("app/simulator/utils/dataGenerator");
+var config = require("app/simulator/config");
+
+
+var log = require("log");
+log.setLevel("INFO");
+
+var device = simulatedDeviceManager.getRandomSimulatedDevice();
+
+var accountKey = config.accountKey;
+
+if(device) {
+    //generate random device state
+    device.state = config.data.state[Math.floor(Math.random()*config.data.state.length)];
+    
+    //Need this on single update and on generation of data as we are not loading the lock info from db when updating state
+    device.batteryLevel = deviceData.generateBatteryLevel() 
+    device.ec = deviceData.generateElectricalConductivity();
+    device.tds = deviceData.generateTDS();
+    device.ph = deviceData.generateAcidity();
+    device.turbidity = deviceData.generateTurbidity();
+    device.creationDate = new Date().getTime();
+    
+    //PUBLISH DATA TO THE AIRVANTAGE DMP OVER MQTT
+    deviceProcessor.processEntry(device);
+    
+    return device;
+} else {
+    log.error("No available devices.");
+}
+
+
+

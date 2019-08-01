@@ -1,0 +1,7 @@
+<section class="page-inner" ng-if="vm.selectedObject != null && vm.selectedObject.key != 'all'">
+
+    <div ng-include="'/app/view/html/views/dashboard/summary.html'"></div>
+
+    <iframe style="height: calc(100vh - 165px); width: 100%; border: 0;"  ng-src="{{vm.realTimeSrc}}"></iframe>
+
+</section>

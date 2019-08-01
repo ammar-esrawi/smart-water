@@ -1,0 +1,31 @@
+<div ng-if="vm.selectedObject == null" style="
+                                              line-height: 90px;
+                                              text-align: center;
+                                              color: #000;
+                                              font-size: 1em;
+                                              " class="ng-scope">
+    <div>
+        Please select a device to open a ticket. </div>
+    <div style="font-size: 3em; color: #00ab67;">
+        <i class="fa fa-spinner fa-spin" aria-hidden="true"></i> 
+    </div>
+</div>
+
+<div class="col-xs-12 mt10 zoho-ticket" ng-if="vm.selectedObject != null"> 
+    <div class="alert alert-success" role="alert" ng-show="vm.showError"><i class="fa fa-check"></i> You have successfully created a zoho ticket.</div>
+    <div html-class="bls" sf-options="vm.frmGlobalOptions" sf-schema="vm.zohoSchema" sf-form="vm.zohoForm" sf-model="vm.zohoModel"></div>
+    <div class="mt10">
+        <scriptr-button
+                        type="btn btn-success btn-sm"
+                        is-disabled="vm.zohoModel.subject != '' && vm.zohoModel.message != ''? false : true"
+                        on-buttonclick="vm.onCreateTicket"    
+                        on-success="vm.onBtnSuccess"
+                        transport="https"    
+                        label="Create Ticket"
+                        https-method = "post"
+                        api-params="vm.zohoModel"   
+                        api="app/api/zoho/createTicket"
+                        >
+        </scriptr-button>
+    </div>
+</div>

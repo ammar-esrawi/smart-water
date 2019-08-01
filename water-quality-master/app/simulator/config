@@ -1,0 +1,19 @@
+var accountKey = "R602CADC5A"
+var accountSecret = "S56885E13A88BAFFE892AC125D283D2B"
+var simulatedDevicesKey = accountKey + "_device";
+var data = {
+    "state": ["LOCKED", "UNLOCKED"],
+    "source": ["simulator"],
+    "city": ["montreal"],
+    "country": ["canada"],
+    "data": [
+    	{"application": "drinking water", "material": "plastic", "group": "acme", "type": "Hydro-pneumatic tank"},
+        {"application": "irrigation agriculture", "material": "concrete", "group": "acme", "type": "Ground tank"},
+        {"application": "fire suppression", "material": "bolted steel", "group": "acme", "type": " Horizontal cylindrical"},
+        {"application": "agricultural farming", "material": "stone", "group": "acme", "type": "Ground tank"},
+        {"application": "chemical manufacturing", "material": "welded steel", "group": "acme", "type": "Ground Floor"},
+        {"application": "food preparation", "material": "stainless steel", "group": "acme", "type": "Ground Floor"},
+        {"application": "drinking water", "material": "fiberglass", "group": "acme", "type": "Elevated water tank"}
+    ]
+}
+var extraData = ["batteryLevel", "turbidity", "ec", "tds", "ph", "temperature", "outsideTemperature", "tampered"];

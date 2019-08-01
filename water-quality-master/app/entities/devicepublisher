@@ -1,0 +1,74 @@
+var deviceManager = require("app/entities/devicemanager");
+var utils = require("app/entities/utils")
+var redis = require("redis").getInstance("redisFacade");
+var config = require("/app/entities/config");
+
+var log = require("log");
+
+
+var publishChannel = "";//"responseChannel_"
+
+var accountKey = config.accountKey;
+
+var publish_prefix = accountKey + "_device_publish_timestamp_";
+var lock_prefix =  accountKey + "_device_publish_lock_";
+var locked_prefix = accountKey + "_device_publish_locked_";
+
+function publishDevice(entry, force){
+    //Calculate entries timestamp to decided on publishing to client
+    var publishData = true;
+    var prevKey = publish_prefix + entry.id;
+    var previousEntry = redis.get(prevKey);
+    var lockKey = lock_prefix + entry.id;
+    var lockValue = locked_prefix + entry.id;
+    //Lock for 3 seconds if no lock, return 
+    var lockEntry  = redis.set(lockKey, lockValue, "NX", "EX", 30);
+    log.info("lock entry ="+lockEntry)
+    if(lockEntry != null || force) {
+        if(!previousEntry) {
+            var p = redis.set(prevKey, JSON.stringify(entry));
+            log.info("Previous device publish entry: "+JSON.stringify(entry));
+        } else {   
+            log.info("Previous Entry: "+JSON.stringify(previousEntry));
+            //Get last 2 entries
+            var timeDelta =  (entry.creationDate - JSON.parse(previousEntry)["creationDate"])/1000;
+            log.info("Time difference: "+timeDelta)
+            if(timeDelta < 5 && !force) {
+                log.info("Don't publish data")
+                publishData = false;
+            } else {
+                log.info("Do publish data" + JSON.stringify(entry))
+                redis.set(prevKey, JSON.stringify(entry));
+            }
+        }
+        var deviceChannel = getDevicePublishChannel(entry);
+        log.info("device channel: "+deviceChannel)
+        if(deviceChannel && publishData) {
+            publishMapData(deviceChannel, entry);
+            publishDashboardData(deviceChannel, entry)
+        }
+        if(redis.get(lockKey) == lockValue) {
+            redis.del(lockKey)
+        }
+    }
+}
+
+
+function getDevicePublishChannel(device) {
+   var deviceDefinition = deviceManager.getDeviceDefinition(device.id);
+   log.info("deviceDefinition: " +JSON.stringify(deviceDefinition));
+   log.info("channel name: " +publishChannel + deviceDefinition.group);
+   return (deviceDefinition && deviceDefinition.group) ? (publishChannel + deviceDefinition.group) : null;
+}
+
+function publishDashboardData(channel, entry) {
+    publish(channel, {"id": "live_data_"+entry.id, "result": {
+                "live": entry, 
+                "historical": deviceManager.getHistoricalDeviceEntries(entry.id)}
+            })
+}
+
+function publishMapData(channel, entry){
+     console.log("Publish map entry"+ JSON.stringify( utils.format([entry])))
+     publish(channel, {"id": "live_map_data", "result": utils.format([entry])})
+}

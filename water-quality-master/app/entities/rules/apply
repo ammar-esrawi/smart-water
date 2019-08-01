@@ -1,0 +1,20 @@
+var deviceManager = require("app/entities/devicemanager");
+var utils = require("app/entities/utils");
+var log = require("log")
+log.setLevel("INFO")
+//check if device has associated rule and execute it
+function process(device, request){
+    
+  var deviceDefinition = deviceManager.getDeviceDefinition(device.id)
+  log.info("Device in rules/apply: deviceId "+JSON.stringify(device.id))
+  log.info("Device in rules/apply:  deviceDefinition "+JSON.stringify(deviceDefinition))
+  try{
+    log.info("Start Proccessing Specific device rule")
+    return utils.executeDecisionTable("app/entities/rules/"+deviceDefinition.group+"/asset_all_" + device.id, device);
+    log.info("End Proccessing Specific device rule");
+  }catch(e){
+    log.info("Start Proccessing Generic All devices rule")
+    return utils.executeDecisionTable("app/entities/rules/"+deviceDefinition.group+"/asset_all_generic", device);
+    log.info("End Proccessing Generic Devices rule")
+  }
+}

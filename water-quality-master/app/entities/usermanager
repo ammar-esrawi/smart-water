@@ -1,0 +1,15 @@
+var _= require("modules/underscore/underscore.js")._;
+var config = require("/app/entities/config");
+
+var accountKey = config.accountKey;
+
+function getGroups(user) {
+    var groups = user.groups;
+    if (groups == null) {
+        groups = [];
+    } else if (typeof groups == 'string') {
+        groups = [ groups ];
+    }
+    return _.map(groups, function(item){return item.replace("@"+accountKey,"").replace("group:","")});	
+    
+}

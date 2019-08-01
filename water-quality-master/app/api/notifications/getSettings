@@ -1,0 +1,21 @@
+var log = require("log");
+log.setLevel("INFO");
+
+var notificationManager = require("app/entities/notificationmanager");
+var userManager = require("app/entities/usermanager");
+
+var userGroups = userManager.getGroups(request.user);
+
+var emails = [];
+var mobiles = [];
+for(var i = 0; i < userGroups.length; i++){
+    var settings = notificationManager.getNotificationSettings(userGroups[i])
+    if(settings && settings.emails) 
+        emails = emails.concat(settings.emails);
+    if(settings && settings.mobiles) 
+        mobiles = mobiles.concat(settings.mobiles);
+         
+}
+
+return {emails: emails, mobiles: mobiles};
+

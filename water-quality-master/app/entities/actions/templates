@@ -1,0 +1,41 @@
+var _templates = {
+   zoho: {
+		TURBIDITY_TICKET: {
+		   subject: 'Water Tank <%= id %>: High Turbidity!',
+		   body: 'Water Tank with id <%= id %> has detected high turbidity.'
+		 },
+		 PH_TICKET: {
+		   subject: 'Water Tank <%= id %>: High Acidity!',
+		   body: 'Water Tank with id <%= id %> has detected high acidity in water.'
+		 },
+		 EC_TICKET: {
+		   subject: 'Water Tank <%= id %>: High Electical Conductivity!',
+		   body: 'Water Tank with id <%= id %> has detected high electical conductivity in water.'
+		 }
+  },
+  mail: {
+      TURBIDITY_TICKET: {
+		   subject: 'Water Tank <%= id %>: High Turbidity!',
+		   body: 'Water Tank with id <%= id %> has detected high turbidity.'
+		 },
+		 PH_TICKET: {
+		   subject: 'Water Tank <%= id %>: High Acidity!',
+		   body: 'Water Tank with id <%= id %> has detected high acidity in water.'
+		 },
+		 EC_TICKET: {
+		   subject: 'Water Tank <%= id %>: High Electical Conductivity!',
+		   body: 'Water Tank with id <%= id %> has detected high electical conductivity in water.'
+		 }
+      
+  }, 
+  sms : {
+     TURBIDITY_TICKET:  'Water Tank with id <%= id %> has detected high turbidity.',
+	 PH_TICKET: 'Water Tank with id <%= id %> has detected high acidity in water.',
+     EC_TICKET: 'Water Tank with id <%= id %> has detected high electical conductivity in water.'
+  }
+}
+
+
+function getTemplate(type, event){
+  return _templates[type][event];
+}

@@ -1,0 +1,32 @@
+var deviceManager = require("app/entities/devicemanager")
+
+var userManager = require("app/entities/usermanager");
+var groupManager = require("app/entities/groupmanager");
+var utils = require("app/entities/utils");
+var log = require("log");
+
+log.setLevel("INFO");
+var userGroups = userManager.getGroups(request.user);
+
+log.info("user groups: " + JSON.stringify(userGroups))
+var devices = getDevices(userGroups);
+
+log.info("devices: " + JSON.stringify(devices))
+result =  utils.format(devices);
+
+return result;
+
+
+function getDevices(userGroups) {
+  var documents = [];
+  for(var i = 0; i < userGroups.length; i++){
+      var devices = groupManager.getGroupDevices(userGroups[i]);
+      for(var j = 0; j < devices.length; j++) {
+          var entry = deviceManager.getLatestDeviceEntry(devices[j])
+          console.log(JSON.stringify(entry))
+          if(entry)
+              documents.push(entry)
+      }
+  }
+  return documents;
+}

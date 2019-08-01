@@ -1,0 +1,32 @@
+//Generare the simulated devices
+var deviceGenerator = require("app/simulator/utils/dataGenerator");
+var deviceManager = require("app/entities/devicemanager");
+var groupManager = require("app/entities/groupmanager");
+var config = require("app/simulator/config");
+
+
+var devices = deviceGenerator.generateRandomDevices(
+    {"lat": 45.5602805, "lng": -73.8521324}, 
+    200, 
+    config.data.data.length);
+
+for(var i = 0; i < devices.length; i++) {
+    //Save device definition
+    deviceManager.saveDeviceDefinition(devices[i]);
+    //Save device entry
+    deviceManager.saveDeviceEvent(devices[i]);
+    //Add device to group
+    groupManager.saveGroupDevice({"id": devices[i].group, "device": devices[i].id});
+} 
+
+return devices;
+
+
+
+
+
+
+
+
+
+

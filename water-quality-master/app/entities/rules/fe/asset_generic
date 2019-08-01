@@ -1,0 +1,15 @@
+var device;
+var request;
+var alertType;
+
+function execute(device, request) {
+  alertType = null;
+  if (device["state"] == 'UNLOCKED') {
+    alertType = 'UNLOCK_ALERT';
+  }
+  if (device["tampered"] == true) {
+    alertType = 'TAMPERED_ALERT';
+  }
+  if (alertType != null) {
+    return require("app/entities/actions/emailOnAlert").execute(request, device, alertType)}
+}

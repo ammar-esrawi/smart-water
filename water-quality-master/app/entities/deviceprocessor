@@ -1,0 +1,56 @@
+var log = require("log");
+log.setLevel("INFO");
+
+var document = require("document");
+var deviceManager = require("app/entities/devicemanager");
+var deviceEvaluator = require("app/entities/deviceevaluator");
+var devicePublisher = require("app/entities/devicepublisher");
+var config = require("app/simulator/config");
+
+var accountKey = config.accountKey;
+
+var lock_prefix =  accountKey + "_device_process_lock_";
+var locked_prefix =  accountKey + "_device_process_locked_";
+var lockTimeout = 3; //In seconds
+var retryLockingDelay = 1;
+
+function processEntry(entry, forcePublish) {
+    
+    var previousEntry = deviceManager.getLatestDeviceEntry(entry.id);
+    deviceManager.saveDeviceEvent(entry);
+    deviceEvaluator.evaluateDevice(entry, previousEntry)
+    devicePublisher.publishDevice(entry, forcePublish);
+    
+    
+    //IMPLEMENTATION OF DISTRIBUTED LOCKING. NOT USED AS WE DON'T HAVE SLEEP
+    /**var lockName = lock_prefix + entry.id;
+    var onLockAcquired = function(lockName, lockValue, entry) {
+        try{
+            
+        	deviceManager.saveDeviceEvent(entry);
+    		deviceEvaluator.evaluateDevice(entry, previousEntry)
+    		devicePublisher.publishDevice(entry);
+        } finally {
+            if(redis.get(lockName) == lockValue) {
+                redis.del(lockName);
+            }
+        }
+    }
+    log.info("Acquire Lock")
+    acquireLock(lockName, lockTimeout, retryLockingDelay, entry, onLockAcquired);
+    **/
+}
+
+
+function acquireLock(lockName, timeout, retryDelay, entry, onLockAquired) {
+	function retry() {
+        sleep(retryDelay);
+        acquireLock(client, lockName, timeout, retryDelay, onLockAquired);
+	}
+
+	var lockValue = (Date.now() + timeout + 1);
+    var lockEntry  = redis.set(lockName, lockValue, "NX", "EX", timeout);
+    if(lockEntry == null) return retry();
+    else onLockAquired(lockName, lockValue, entry);
+}
+

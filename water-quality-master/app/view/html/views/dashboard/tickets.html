@@ -1,0 +1,20 @@
+<div ng-include="'/app/view/html/views/dashboard/summary.html'"></div>
+<scriptr-grid
+              columns-definition= "vm.colDef" 
+              row-model-type='virtual'
+              pagination='true'
+              suppress-filter='true'
+              enable-sorting='false'
+              grid-height='calc(100vh - 200px)'
+              cell-editable='true'
+              enable-client-side-filter='false'
+              enable-server-side-filter='false' 
+              enable-server-side-sorting='false'
+              row-model-selection='multiple'
+              pagination-page-size='100'
+              transport='https' 
+              default-cell-renderer="vm.defaultCellRenderer"  
+              api='app/api/zoho/listDeviceTickets'
+              api-params="vm.gridParams"
+              on-format-data="vm.ticketsCallback">
+</scriptr-grid>

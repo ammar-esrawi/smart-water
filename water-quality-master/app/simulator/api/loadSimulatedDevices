@@ -1,0 +1,3 @@
+var simulatedDeviceManager = require("app/simulator/entities/simulatedDeviceManager");
+
+return simulatedDeviceManager.loadAllSimulatedDevices()

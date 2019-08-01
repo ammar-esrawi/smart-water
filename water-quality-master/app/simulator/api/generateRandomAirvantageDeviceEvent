@@ -1,0 +1,61 @@
+var system = require("modules/airvantage/system.js")
+var simulatedDeviceManager = require("app/simulator/entities/simulatedDeviceManager");
+var deviceData = require("app/simulator/utils/dataGenerator");
+var config = require("app/simulator/config");
+
+
+var log = require("log");
+log.setLevel("INFO");
+
+var accountKey = config.accountKey;
+
+var device = {};
+if(device) {
+    
+    //Need this on single update and on generation of data as we are not loading the lock info from db when updating state
+   	device.state = config.data.state[Math.floor(Math.random()*config.data.state.length)];
+    device.batteryLevel = deviceData.generateBatteryLevel();
+    device.ec = deviceData.generateElectricalConductivity();
+    device.tds = deviceData.generateTDS();
+    device.ph = deviceData.generateAcidity();
+    device.turbidity = deviceData.generateTurbidity();
+    device.creationDate = new Date().getTime();
+    
+    //PUBLISH DATA TO THE AIRVANTAGE DMP OVER MQTT
+    processData(device)
+    
+    return device;
+} else {
+    log.error("No available devices.");
+}
+
+
+function processData(data) {
+    try {
+        var airvantageClient = require("modules/airvantage/airvantageClient.js");
+        var tokenManager = require("modules/airvantage/authorization/TokenManager.js");
+        /*
+         * MQTT
+         */
+        
+        //Currently i have 2 devices
+        
+       
+       var devices = 
+       [{
+            username: "0649E2EE4F4743FB991862F223923991-ANDROID",
+            password: "12345",
+            endpoint: "na.airvantage.net",
+            deviceId: "353410074990189"
+        },{
+            username: "0649E2EE4F4743FB991862F223923991-WATERSENSOR",
+            password: "12345",
+            endpoint: "na.airvantage.net",
+            deviceId: "354384060579091"
+        }];
+    
+        return system.publish(data, devices[Math.floor(Math.random() * devices.length)]);
+    }catch(exception) {
+        return exception;
+    }
+}

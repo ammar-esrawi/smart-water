@@ -1,0 +1,56 @@
+var deviceManager = require("app/entities/devicemanager")
+
+var userManager = require("app/entities/usermanager");
+var groupManager = require("app/entities/groupmanager");
+var utils = require("app/entities/utils");
+var log = require("log");
+
+log.setLevel("INFO");
+
+
+var query = {};
+if(request.body != null){
+	query = request.body;
+}else if(request.parameters.body){
+	query = request.parameters.body;
+} else {
+  query = request.parameters;
+}
+
+if(typeof query == 'string' && params != null){
+  	try{
+    	query = JSON.parse(params);   
+    }catch(e){
+      	return "INVALID OR MISSING PARAMETER";
+    }
+}
+
+var userGroups = userManager.getGroups(request.user);
+if(userGroups.length == 0) userGroups = ["accessLevel2"]
+var result = getDevices(userGroups, query.id);
+
+
+result =  utils.format(result);
+
+return result;
+
+
+function getDevices(userGroups, deviceId) {
+  var documents = []
+  for(var i = 0; i < userGroups.length; i++){
+      var devices = groupManager.getGroupDevices(userGroups[i]);
+      for(var j = 0; j < devices.length; j++) {
+           if(deviceId) {
+               if(devices.indexOf(deviceId) != -1) {
+                  var entries = deviceManager.getHistoricalDeviceEntries(deviceId)
+                  if(entries)
+                     documents = entries
+                  else 
+                      documents = []
+                  return documents;
+               }
+           } 
+      }
+      
+  }
+}
